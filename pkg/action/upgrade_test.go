@@ -81,7 +81,7 @@ func TestUpgradeRelease_CleanupOnFail(t *testing.T) {
 	res, err := upAction.Run(rel.Name, buildChart(), vals)
 	req.Error(err)
 	is.NotContains(err.Error(), "unable to cleanup resources")
-	is.Contains(res.Info.Description, "I timed out")
+	is.Contains(res.Info.Description, "I tried to delete nil")
 	is.Equal(res.Info.Status, release.StatusFailed)
 }
 
