@@ -37,7 +37,10 @@ jobs:
             fossa test
       - run:
           name: Release
-          command: curl -sL https://git.io/goreleaser | bash
+          command: |
+            make build-cross
+            make dist checksum
+            curl -sL https://git.io/goreleaser | bash
 
 workflows:
   version: 2
