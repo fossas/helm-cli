@@ -397,7 +397,6 @@ func TestInstallRelease_Atomic(t *testing.T) {
 
 		_, err := instAction.Run(buildChart(), vals)
 		is.Error(err)
-		is.Contains(err.Error(), "I timed out")
 		is.Contains(err.Error(), "uninstall fail")
 		is.Contains(err.Error(), "an error occurred while uninstalling the release")
 	})
