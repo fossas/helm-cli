@@ -22,6 +22,12 @@ jobs:
       - run:
           name: test
           command: make test-coverage
+      - run:
+          name: License Scan
+          command: |
+            curl -H 'Cache-Control: no-cache' https://raw.githubusercontent.com/fossas/fossa-cli/master/install.sh | bash
+            fossa analyze
+            fossa test
   release:
     working_directory: ~/helm.sh/helm
     docker:
@@ -29,12 +35,6 @@ jobs:
 
     steps:
       - checkout
-      - run:
-          name: License Scan
-          command: |
-            curl -H 'Cache-Control: no-cache' https://raw.githubusercontent.com/fossas/fossa-cli/master/install.sh | bash
-            fossa analyze
-            fossa test
       - run:
           name: Release
           command: |
