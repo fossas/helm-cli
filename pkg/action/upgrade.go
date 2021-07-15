@@ -330,6 +330,13 @@ func (u *Upgrade) performUpgrade(originalRelease, upgradedRelease *release.Relea
 		}
 	}
 
+	// post-upgrade hooks
+	if !u.DisableHooks {
+		if err := u.cfg.execHook(upgradedRelease, release.HookPostUpgrade, u.Timeout); err != nil {
+			return u.failRelease(upgradedRelease, results.Created, fmt.Errorf("post-upgrade hooks failed: %s", err))
+		}
+	}
+
 	if u.Wait {
 		if u.WaitForJobs {
 			if err := u.cfg.KubeClient.WaitWithJobs(target, u.Timeout); err != nil {
@@ -341,13 +348,6 @@ func (u *Upgrade) performUpgrade(originalRelease, upgradedRelease *release.Relea
 				u.cfg.recordRelease(originalRelease)
 				return u.failRelease(upgradedRelease, results.Created, err)
 			}
-		}
-	}
-
-	// post-upgrade hooks
-	if !u.DisableHooks {
-		if err := u.cfg.execHook(upgradedRelease, release.HookPostUpgrade, u.Timeout); err != nil {
-			return u.failRelease(upgradedRelease, results.Created, fmt.Errorf("post-upgrade hooks failed: %s", err))
 		}
 	}
 
