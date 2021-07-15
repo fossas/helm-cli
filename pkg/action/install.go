@@ -352,6 +352,12 @@ func (i *Install) Run(chrt *chart.Chart, vals map[string]interface{}) (*release.
 		}
 	}
 
+	if !i.DisableHooks {
+		if err := i.cfg.execHook(rel, release.HookPostInstall, i.Timeout); err != nil {
+			return i.failRelease(rel, fmt.Errorf("failed post-install: %s", err))
+		}
+	}
+
 	if i.Wait {
 		if i.WaitForJobs {
 			if err := i.cfg.KubeClient.WaitWithJobs(resources, i.Timeout); err != nil {
@@ -361,12 +367,6 @@ func (i *Install) Run(chrt *chart.Chart, vals map[string]interface{}) (*release.
 			if err := i.cfg.KubeClient.Wait(resources, i.Timeout); err != nil {
 				return i.failRelease(rel, err)
 			}
-		}
-	}
-
-	if !i.DisableHooks {
-		if err := i.cfg.execHook(rel, release.HookPostInstall, i.Timeout); err != nil {
-			return i.failRelease(rel, fmt.Errorf("failed post-install: %s", err))
 		}
 	}
 
