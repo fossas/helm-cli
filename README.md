@@ -1,3 +1,11 @@
+# fossas/helm-cli
+
+This is a fork of [helm](https://github.com/helm/helm) that we use as part of our [chart-testing](https://github.com/fossas/chart-testing) tool. The only difference from the upstream version is that when `--wait` is set this fork will run post-install and -upgrade hooks before waiting for pods to be ready.
+
+Original README is preserved below.
+
+---
+
 # Helm
 
 [![CircleCI](https://circleci.com/gh/helm/helm.svg?style=shield)](https://circleci.com/gh/helm/helm)
@@ -29,7 +37,6 @@ Think of it like apt/yum/homebrew for Kubernetes.
   (like Debian or RedHat packages)
 
 ## Install
-
 
 Binary downloads of the Helm client can be found on [the Releases page](https://github.com/helm/helm/releases/latest).
 
