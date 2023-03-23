@@ -4,7 +4,7 @@ jobs:
   test:
     working_directory: ~/helm.sh/helm
     docker:
-      - image: circleci/golang:1.16
+      - image: cimg/go:1.18
 
         auth:
           username: $DOCKER_USER
@@ -12,7 +12,7 @@ jobs:
 
     environment:
       GOCACHE: "/tmp/go/cache"
-      GOLANGCI_LINT_VERSION: "1.36.0"
+      GOLANGCI_LINT_VERSION: "1.46.2"
 
     steps:
       - checkout
@@ -26,6 +26,9 @@ jobs:
           name: test
           command: make test-coverage
       - run:
+          name: test build
+          command: make
+      - run:
           name: License Scan
           command: |
             curl -H 'Cache-Control: no-cache' https://raw.githubusercontent.com/fossas/fossa-cli/master/install.sh | bash
@@ -33,7 +36,11 @@ jobs:
   release:
     working_directory: ~/helm.sh/helm
     docker:
-      - image: circleci/golang:1.16
+      - image: cimg/go:1.18
+
+        auth:
+          username: $DOCKER_USER
+          password: $DOCKER_PASS
 
     steps:
       - checkout

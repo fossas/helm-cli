@@ -60,6 +60,15 @@ entries:
       home: https://github.com/something
       digest: "sha256:1234567890abcdef"
 `
+	indexWithEmptyEntry = `
+apiVersion: v1
+entries:
+  grafana:
+  - apiVersion: v2
+    name: grafana
+  foo:
+  -
+`
 )
 
 func TestIndexFile(t *testing.T) {
@@ -152,6 +161,18 @@ func TestLoadIndex_Duplicates(t *testing.T) {
 	}
 }
 
+func TestLoadIndex_EmptyEntry(t *testing.T) {
+	if _, err := loadIndex([]byte(indexWithEmptyEntry), "indexWithEmptyEntry"); err != nil {
+		t.Errorf("unexpected error: %s", err)
+	}
+}
+
+func TestLoadIndex_Empty(t *testing.T) {
+	if _, err := loadIndex([]byte(""), "indexWithEmpty"); err == nil {
+		t.Errorf("Expected an error when index.yaml is empty.")
+	}
+}
+
 func TestLoadIndexFileAnnotations(t *testing.T) {
 	i, err := LoadIndexFile(annotationstestfile)
 	if err != nil {
@@ -202,14 +223,15 @@ func TestMerge(t *testing.T) {
 
 	if len(ind1.Entries) != 2 {
 		t.Errorf("Expected 2 entries, got %d", len(ind1.Entries))
-		vs := ind1.Entries["dreadnought"]
-		if len(vs) != 2 {
-			t.Errorf("Expected 2 versions, got %d", len(vs))
-		}
-		v := vs[0]
-		if v.Version != "0.2.0" {
-			t.Errorf("Expected %q version to be 0.2.0, got %s", v.Name, v.Version)
-		}
+	}
+
+	vs := ind1.Entries["dreadnought"]
+	if len(vs) != 2 {
+		t.Errorf("Expected 2 versions, got %d", len(vs))
+	}
+
+	if v := vs[1]; v.Version != "0.2.0" {
+		t.Errorf("Expected %q version to be 0.2.0, got %s", v.Name, v.Version)
 	}
 
 }
@@ -507,11 +529,7 @@ func TestIndexWrite(t *testing.T) {
 	if err := i.MustAdd(&chart.Metadata{APIVersion: "v2", Name: "clipper", Version: "0.1.0"}, "clipper-0.1.0.tgz", "http://example.com/charts", "sha256:1234567890"); err != nil {
 		t.Fatalf("unexpected error: %s", err)
 	}
-	dir, err := ioutil.TempDir("", "helm-tmp")
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer os.RemoveAll(dir)
+	dir := t.TempDir()
 	testpath := filepath.Join(dir, "test")
 	i.WriteFile(testpath, 0600)
 
@@ -521,5 +539,23 @@ func TestIndexWrite(t *testing.T) {
 	}
 	if !strings.Contains(string(got), "clipper-0.1.0.tgz") {
 		t.Fatal("Index files doesn't contain expected content")
+	}
+}
+
+func TestAddFileIndexEntriesNil(t *testing.T) {
+	i := NewIndexFile()
+	i.APIVersion = chart.APIVersionV1
+	i.Entries = nil
+	for _, x := range []struct {
+		md       *chart.Metadata
+		filename string
+		baseURL  string
+		digest   string
+	}{
+		{&chart.Metadata{APIVersion: "v2", Name: " ", Version: "8033-5.apinie+s.r"}, "setter-0.1.9+beta.tgz", "http://example.com/charts", "sha256:1234567890abc"},
+	} {
+		if err := i.MustAdd(x.md, x.filename, x.baseURL, x.digest); err == nil {
+			t.Errorf("expected err to be non-nil when entries not initialized")
+		}
 	}
 }
