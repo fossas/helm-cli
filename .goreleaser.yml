@@ -1,0 +1,15 @@
+version: 2
+
+builds:
+  - skip: true
+
+release:
+  extra_files:
+    - glob: ./_dist/helm-*
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
