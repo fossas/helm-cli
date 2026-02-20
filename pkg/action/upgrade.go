@@ -443,6 +443,14 @@ func (u *Upgrade) releasingUpgrade(c chan<- resultMessage, upgradedRelease *rele
 		}
 	}
 
+	// post-upgrade hooks
+	if !u.DisableHooks {
+		if err := u.cfg.execHook(upgradedRelease, release.HookPostUpgrade, u.Timeout); err != nil {
+			u.reportToPerformUpgrade(c, upgradedRelease, results.Created, fmt.Errorf("post-upgrade hooks failed: %s", err))
+			return
+		}
+	}
+
 	if u.Wait {
 		u.cfg.Log(
 			"waiting for release %s resources (created: %d updated: %d  deleted: %d)",
@@ -459,14 +467,6 @@ func (u *Upgrade) releasingUpgrade(c chan<- resultMessage, upgradedRelease *rele
 				u.reportToPerformUpgrade(c, upgradedRelease, results.Created, err)
 				return
 			}
-		}
-	}
-
-	// post-upgrade hooks
-	if !u.DisableHooks {
-		if err := u.cfg.execHook(upgradedRelease, release.HookPostUpgrade, u.Timeout); err != nil {
-			u.reportToPerformUpgrade(c, upgradedRelease, results.Created, fmt.Errorf("post-upgrade hooks failed: %s", err))
-			return
 		}
 	}
 

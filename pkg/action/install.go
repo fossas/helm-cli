@@ -466,6 +466,12 @@ func (i *Install) performInstall(rel *release.Release, toBeAdopted kube.Resource
 		return rel, err
 	}
 
+	if !i.DisableHooks {
+		if err := i.cfg.execHook(rel, release.HookPostInstall, i.Timeout); err != nil {
+			return rel, fmt.Errorf("failed post-install: %s", err)
+		}
+	}
+
 	if i.Wait {
 		if i.WaitForJobs {
 			err = i.cfg.KubeClient.WaitWithJobs(resources, i.Timeout)
@@ -474,12 +480,6 @@ func (i *Install) performInstall(rel *release.Release, toBeAdopted kube.Resource
 		}
 		if err != nil {
 			return rel, err
-		}
-	}
-
-	if !i.DisableHooks {
-		if err := i.cfg.execHook(rel, release.HookPostInstall, i.Timeout); err != nil {
-			return rel, fmt.Errorf("failed post-install: %s", err)
 		}
 	}
 
